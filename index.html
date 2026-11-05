@@ -1,0 +1,171 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>රැකියා ලැදියා පරීක්ෂණය</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;500;700&family=Noto+Serif+Sinhala:wght@600;800&display=swap">
+<style>
+/* Layout: one narrow reading column; sticky progress band on top, 63 paired-choice rows, live results panel at the end. */
+:root{
+  --bg:#f6f8f5; --surface:#ffffff; --ink:#18221b; --muted:#5b685f; --line:#d9e0da;
+  --accent:#4f8f0f; --accent-ink:#ffffff; --accent-soft:#e6f1d8;
+  --bad:#b3261e; --bad-soft:#fbe9e7; --warn:#8a5a00; --warn-soft:#fff1d6;
+  --f-display:'Noto Serif Sinhala',Georgia,serif; --f-body:'Noto Sans Sinhala',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1511; --surface:#182019; --ink:#e8efe9; --muted:#9aa89e; --line:#2b372e;
+  --accent:#8cc63f; --accent-ink:#0f1511; --accent-soft:#25351a;
+  --bad:#ff8a80; --bad-soft:#3a1d1a; --warn:#f2c14e; --warn-soft:#3a2d10; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1511; --surface:#182019; --ink:#e8efe9; --muted:#9aa89e; --line:#2b372e;
+  --accent:#8cc63f; --accent-ink:#0f1511; --accent-soft:#25351a;
+  --bad:#ff8a80; --bad-soft:#3a1d1a; --warn:#f2c14e; --warn-soft:#3a2d10; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.7 var(--f-body);margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:760px;margin:0 auto}
+header{padding-block:28px 8px}
+h1{font:800 clamp(1.6rem,5vw,2.2rem)/1.3 var(--f-display);margin:0 0 6px;text-wrap:balance}
+.lead{color:var(--muted);margin:0}
+.info{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-block:20px}
+.info label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted);min-width:0}
+.info input{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:9px 11px;min-width:0}
+.info .wide{grid-column:1/-1}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.count{font-variant-numeric:tabular-nums;font-weight:700;font-size:1.05rem;white-space:nowrap}
+.count small{font-weight:400;color:var(--muted)}
+.track{flex:1 1 120px;height:8px;background:var(--line);border-radius:4px;overflow:hidden;min-width:80px}
+.track i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+.pill{font-size:.85rem;font-weight:500;padding:2px 12px;border-radius:99px;background:var(--warn-soft);color:var(--warn)}
+.pill.ok{background:var(--accent-soft);color:var(--ink)}
+.pill.err{background:var(--bad-soft);color:var(--bad)}
+.how{background:var(--accent-soft);border-radius:8px;padding:12px 14px;margin-block:16px;font-size:.95rem}
+.q{display:grid;grid-template-columns:2.2rem 1fr;gap:6px 8px;margin-block:10px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.q.miss{border-color:var(--bad)}
+.n{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.85rem;padding-top:11px;text-align:right}
+.opts{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:stretch;min-width:0}
+.opts .or{align-self:center;color:var(--muted);font-size:.8rem}
+.opt{font:inherit;text-align:left;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:7px;padding:9px 11px;cursor:pointer;min-width:0;line-height:1.5}
+.opt:hover{border-color:var(--accent)}
+.opt[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:500}
+.opt:focus-visible,.btn:focus-visible,.info input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media (max-width:520px){.opts{grid-template-columns:1fr}.opts .or{text-align:center}.q{grid-template-columns:1.6rem 1fr}}
+h2{font:800 1.4rem/1.3 var(--f-display);margin:36px 0 12px}
+.res{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}
+.row{display:grid;grid-template-columns:8.5rem 1fr 2.2rem;gap:10px;align-items:center;margin-block:8px}
+.row .nm{font-size:.95rem}
+.row .tr{height:20px;background:var(--bg);border-radius:4px;position:relative;overflow:hidden}
+.row .tr i{position:absolute;inset:0 auto 0 0;width:0;background:var(--accent);border-radius:0 4px 4px 0;transition:width .3s}
+.row .tr.top i{background:var(--accent)} .row .tr:not(.top) i{opacity:.55}
+.row b{font-variant-numeric:tabular-nums;text-align:right}
+.scale{display:grid;grid-template-columns:8.5rem 1fr 2.2rem;gap:10px;font-size:.75rem;color:var(--muted)}
+.scale span{display:flex;justify-content:space-between;font-variant-numeric:tabular-nums}
+.top3{margin:0 0 14px;font-weight:500}
+.vc{display:grid;grid-template-columns:1.8rem 1fr;gap:6px}
+.yax{position:relative;height:240px;font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.yax span{position:absolute;right:0;transform:translateY(50%)}
+.cols{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:clamp(4px,2vw,14px);height:240px;border-bottom:1.5px solid var(--muted);background:linear-gradient(var(--line) 1px,transparent 1px) 0 0/100% 33.3333% no-repeat,linear-gradient(var(--line) 1px,transparent 1px) 0 33.3333%/100% 1px no-repeat,linear-gradient(var(--line) 1px,transparent 1px) 0 66.6666%/100% 1px no-repeat}
+.col{position:relative;display:flex;align-items:flex-end;justify-content:center}
+.cb{position:relative;width:78%;max-width:60px;min-height:0;background:var(--accent);opacity:.55;border-radius:4px 4px 0 0;transition:height .3s}
+.cb.top{opacity:1}
+.cb b{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);padding-bottom:2px;font-variant-numeric:tabular-nums;font-size:.95rem}
+.xl{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:clamp(4px,2vw,14px);margin:8px 0 0 calc(1.8rem + 6px);text-align:center;font-size:clamp(.68rem,2.4vw,.88rem);line-height:1.35;overflow-wrap:anywhere}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.btn{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;border-radius:7px;cursor:pointer}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+footer{margin-top:36px;color:var(--muted);font-size:.85rem}
+@media (max-width:480px){.row,.scale{grid-template-columns:6.4rem 1fr 1.8rem}.row .nm{font-size:.85rem}}
+</style>
+<div class="wrap">
+<header>
+  <h1>රැකියා ලැදියා පරීක්ෂණය</h1>
+  <p class="lead">ප්‍රශ්න 63ක්. සෑම ප්‍රශ්නයකදීම ඔබ වඩාත් කැමති ක්‍රියාකාරකම තෝරන්න.</p>
+</header>
+<div class="info">
+  <label class="wide">නම<input id="f-name" autocomplete="off"></label>
+  <label>ශ්‍රේණිය<input id="f-grade" autocomplete="off"></label>
+  <label>දිනය<input id="f-date" autocomplete="off"></label>
+  <label class="wide">පාසල<input id="f-school" autocomplete="off"></label>
+</div>
+<div class="bar" id="bar" role="status">
+  <span class="count"><span id="done">0</span> / 63 <small>සම්පූර්ණ කළ ප්‍රමාණය</small></span>
+  <span class="track"><i id="fill"></i></span>
+  <span class="pill" id="pill">අවසන් කර නැත</span>
+</div>
+<div class="how">සෑම පේළියකම ඇති ක්‍රියාකාරකම් දෙකෙන් ඔබ වැඩියෙන් කැමති එක ඔබන්න. එක් පේළියකට එක් තේරීමක් පමණි. වෙනස් කිරීමට අනෙක ඔබන්න, නැවත ඔබා අහෝසි කළ හැක.</div>
+<div id="qs"></div>
+
+<h2 id="results">ප්‍රතිඵලය</h2>
+<div class="res">
+  <p class="top3" id="top3">ප්‍රශ්න සම්පූර්ණ කළ පසු ඔබේ ප්‍රබලම ලැදියා මෙහි පෙන්වයි.</p>
+  <div class="vc"><div class="yax"><span style="bottom:100%">18</span><span style="bottom:66.67%">12</span><span style="bottom:33.33%">6</span><span style="bottom:0">0</span></div><div class="cols" id="chart" role="img" aria-label="ලැදියා දර්ශකය"></div></div>
+  <div class="xl" id="xl"></div>
+  <div class="actions">
+    <button class="btn" id="jump" type="button">පිළිතුරු නැති ප්‍රශ්නයට යන්න</button>
+    <button class="btn" id="demo" type="button">නිදර්ශන පිළිතුරු පුරවන්න</button>
+    <button class="btn" id="clear" type="button">සියල්ල මකන්න</button>
+  </div>
+</div>
+<footer>උපරිම ලකුණු එක් ක්ෂේත්‍රයකට 18කි. සියලු ක්ෂේත්‍රවල එකතුව 63 වේ. Digital සැකසුම - අමිල උඩවත්ත, eduhelp.lk</footer>
+</div>
+<script>
+const ITEMS=[["කෘෂිකර්මය", "යන්ත්‍ර අලුත්වැඩියාව"], ["රෝග හඳුනාගැනීම", "අහස්යානයක් පැදවීම"], ["ගොඩනැගිලි සැලසුම් කිරීම", "විද්‍යාගාරයක වැඩ කිරීම"], ["ප්‍රශ්න විසඳීමට පවුල්වලට උදව් කිරීම", "චිත්‍ර ඇඳීම"], ["බදු වාර්තා සැකසීම", "සේවකයින් අධීක්ෂණය"], ["ගනුදෙනුකරුවන් හමුවීම", "ළමයින් බලාගැනීම"], ["ඉඩම් මැනීම", "බෙහෙත් විකිණීම"], ["දියමන්ති මුදු සෑදීම", "විදුලි ලාම්පු සැකසීම"], ["රෝහලේ ගිලනුන්ට උදව් කිරීම", "ආබාධිත මස්පිඬු සම්බාහනය"], ["සංචාර සැලසුම් කිරීම", "සංගීත කණ්ඩායමක වාදනය කිරීම"], ["පාසලක ඉගැන්වීම", "පාලම් සැලසුම් කිරීම"], ["ක්‍රීඩා සඳහා පුහුණුව", "නාට්‍යක රඟපෑම"], ["සාප්පු හිමියෙකු වීම", "පරිගණක අලුත්වැඩියාව"], ["නීතීඥයෙකු වීම", "පශු වෛද්‍යවරයෙකු වීම"], ["පුස්තකාලයක් පාලනය", "පුවත්පතකට ලිපි ලිවීම"], ["වන සංරක්ෂණය", "ශල්‍ය වෛද්‍යවරයෙකු වීම"], ["නිවාස ණයක් අනුමත කිරීම", "නිවාසයක් ඉදිකිරීම"], ["පරිගණක මෘදුකාංග නිෂ්පාදනය", "දන්ත කාර්මික"], ["උද්‍යාන සැකසුම", "සාප්පු හිමියකු වීම"], ["ගිණුම් විග්‍රහය මූල්‍ය විශ්ලේෂණය කිරීම", "රැකියා උපදේශනය"], ["ලොරි රියදුරු", "කාර්යාලයක වැඩ"], ["භූගෝල විද්‍යාව", "යාන්ත්‍රික ඇඳීම"], ["රසායන විද්‍යාව", "ලෝහ වැඩ"], ["සංගීතය", "ජීවවිද්‍යාව"], ["ගෘහ විද්‍යාව", "කවි ලිවීම"], ["ගණිතය", "වාණිජ්‍ය"], ["ව්‍යාපාර", "සෞඛ්‍ය සේවා"], ["කෘෂිකර්මය", "භෞතික විද්‍යාව"], ["රෙදිපිළි කර්මාන්තය", "වඩුවැඩ"], ["ඉතිහාසය", "භූ විද්‍යාව"], ["ආර්ථික විද්‍යාව", "නාට්‍ය ශිල්පය"], ["ආගම", "ඉංජිනේරු විද්‍යාව"], ["සත්ව විද්‍යාව", "ඡායාරූප ශිල්පය"], ["සිල්ලර වෙළඳාම", "ජලනල කර්මාන්තය"], ["දේශපාලන විද්‍යාව", "උද්භිද විද්‍යාව"], ["ලේකම් කටයුතු හැදෑරීම", "චිත්‍ර ශිල්පය"], ["පරිසර විද්‍යාව", "සමාජ විද්‍යාව"], ["ගණකාධිකරණය", "ඉලෙක්ට්‍රොනික ශිල්පය"], ["පරිගණක විද්‍යාව", "වෛද්‍ය වෘත්තිය"], ["ශාරීරික අධ්‍යාපනය", "ප්‍රචාරණය"], ["පුස්තකාලයාධිපති", "අධ්‍යාපන/ ඉගැන්වීම"], ["ගෘහ නිර්මාණ", "කළමනාකරණය"], ["සතුන් බලාගැනීම", "බල ආවුද ක්‍රියාකිරීම"], ["පර්යේෂණයක් කිරීම", "මෝටර් රථ අලුත්වැඩියාව"], ["මූර්ති ඇඹීම", "සතුන් කපා පර්යේෂණ කිරීම"], ["ප්‍රශ්න විසඳීමට මිනිසුන්ට උදව් කිරීම", "දර්ශනයක් චිත්‍ර ගත කිරීම"], ["කාර්යාලයක අර්ධකාලීනව වැඩකිරීම", "සාප්පුවක ඇඳුම් පැළඳුම් විකිණීම"], ["අන් අය අධීක්ෂණය", "ගිලනුන්ට උදව් කිරීම"], ["බෝට්ටුවක් පැදවීම", "තාරකා ශාස්ත්‍රය ඉගෙනීම"], ["නාට්‍යයක රඟපෑම", "සඟරාවක් මුද්‍රණය කිරීම"], ["මිනිසුන් සමග සම්මුඛ සාකච්ඡා", "විද්‍යාත්මක දර්ශනයක් නැරඹීම"], ["නාට්‍යයක් අධ්‍යක්ෂණය කිරීම", "ගීතයක් ලිවීම"], ["මිනිසුන්ගේ විමසුම්වලට පිළිතුරු දීම", "යමක කොටස් ගලවා වෙන් කිරීම"], ["මාළු ඇල්ලීම", "ඡායාරූප ගැනීම"], ["ප්‍රචාරණ දැන්වීම සැකසීම", "ගෘහභාණ්ඩ අලුත්වැඩියාව"], ["පාරිභෝගිකයන්ට උපදෙස් දීම", "පාෂාණ සාම්පල රැස්කිරීම"], ["පර්යේෂණ වාර්තාවක් සැකසීම", "කථාවක් ලිවීම"], ["විනෝදය පිණිස ඇවිදීම", "ක්‍රීඩාවක යෙදීම"], ["සංගමයක භාණ්ඩාගාරික වීම", "විනෝද ක්‍රීඩා කට්ටල් එකලස් කිරීම"], ["පුස්තකාලයක වැඩකටයුතු උදව් දීම", "කාලගුණ තොරතුරු රැස්කිරීම"], ["ට්‍රැක්ටරයක් පැදවීම", "සාප්පුවක් කළමනාකරණය කිරීම"], ["පරිගණකයක වැඩසටහන් සම්පාදනය", "නව කාර්ය මණ්ඩල පුහුණු කිරීම"], ["වත්තේ වැඩකිරීම", "යතුරුලියනය කිරීම"]];
+const COMBOS=[[1, 2], [3, 2], [4, 3], [7, 4], [6, 5], [5, 7], [1, 3], [4, 2], [7, 3], [5, 4], [7, 2], [1, 4], [5, 2], [5, 3], [6, 4], [1, 7], [6, 2], [6, 3], [1, 5], [6, 7], [1, 6]]; // COMBOS[k] = [category of option A, category of option B]; question n uses k=(n-1)%21
+const CATS=['එළිමහන්','ප්‍රායෝගික','විද්‍යා','නිර්මාණාත්මක','ව්‍යාපාරික','කාර්යාලයීය','මහජන සම්බන්ධතා'];
+const ans=new Array(63).fill(null); // 'A' | 'B' | null
+const $=id=>document.getElementById(id);
+const KEY='interest-inventory-v1';
+const qs=$('qs');
+ITEMS.forEach((it,i)=>{
+  const d=document.createElement('div');d.className='q';d.id='q'+i;
+  d.innerHTML='<div class="n">'+(i+1)+'</div><div class="opts"></div>';
+  const o=d.querySelector('.opts');
+  ['A','B'].forEach((s,j)=>{
+    const b=document.createElement('button');b.type='button';b.className='opt';b.textContent=it[j];
+    b.setAttribute('aria-pressed','false');b.dataset.s=s;
+    b.onclick=()=>{ans[i]=ans[i]===s?null:s;render();save()};
+    o.appendChild(b);
+    if(j===0){const or=document.createElement('span');or.className='or';or.textContent='හෝ';o.appendChild(or)}
+  });
+  qs.appendChild(d);
+});
+function scores(){
+  const t=new Array(7).fill(0);
+  ans.forEach((a,i)=>{if(a){const c=COMBOS[i%21][a==='A'?0:1];t[c-1]++}});
+  return t;
+}
+function render(){
+  const n=ans.filter(Boolean).length;
+  $('done').textContent=n;$('fill').style.width=(n/63*100)+'%';
+  const p=$('pill');
+  p.className='pill'+(n===63?' ok':'');
+  p.textContent=n===63?'සම්පූර්ණයි':n>63?'ගැටළුවක් තිබේ':'අවසන් කර නැත';
+  ans.forEach((a,i)=>{
+    const q=$('q'+i);q.classList.remove('miss');
+    q.querySelectorAll('.opt').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.s===a)));
+  });
+  const t=scores(),max=Math.max(...t);
+  $('chart').innerHTML=CATS.map((c,i)=>'<div class="col"><div class="cb'+(n&&t[i]===max?' top':'')+'" style="height:'+(t[i]/18*100)+'%"><b>'+t[i]+'</b></div></div>').join('');
+  $('xl').innerHTML=CATS.map(c=>'<span>'+c+'</span>').join('');
+  if(n===63){
+    const order=t.map((v,i)=>[v,i]).sort((a,b)=>b[0]-a[0]||a[1]-b[1]).slice(0,3);
+    $('top3').textContent='ප්‍රබලම ලැදියා: '+order.map(x=>CATS[x[1]]+' ('+x[0]+')').join(', ');
+  }else $('top3').textContent=n?'තවත් ප්‍රශ්න '+(63-n)+'ක් ඉතිරිය. දැනට ලකුණු පහත පෙන්වයි.':'ප්‍රශ්න සම්පූර්ණ කළ පසු ඔබේ ප්‍රබලම ලැදියා මෙහි පෙන්වයි.';
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({ans,f:['name','grade','date','school'].map(k=>$('f-'+k).value)}))}catch(e){}}
+['name','grade','date','school'].forEach(k=>$('f-'+k).addEventListener('input',save));
+$('jump').onclick=()=>{
+  const i=ans.findIndex(a=>!a);
+  if(i<0){$('results').scrollIntoView({behavior:'smooth'});return}
+  const q=$('q'+i);q.classList.add('miss');q.scrollIntoView({behavior:'smooth',block:'center'});
+};
+$('demo').onclick=()=>{for(let i=0;i<63;i++)ans[i]=Math.random()<.5?'A':'B';render();save()};
+$('clear').onclick=()=>{ans.fill(null);render();save()};
+try{
+  const s=JSON.parse(localStorage.getItem(KEY)||'null');
+  if(s){s.ans.forEach((a,i)=>ans[i]=a);['name','grade','date','school'].forEach((k,i)=>$('f-'+k).value=s.f[i]||'')}
+}catch(e){}
+if(!$('f-date').value){const d=new Date();$('f-date').value=d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0')}
+render();
+</script>
+
+</body></html>
