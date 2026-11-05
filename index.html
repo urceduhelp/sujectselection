@@ -72,6 +72,35 @@ h2{font:800 1.4rem/1.3 var(--f-display);margin:36px 0 12px}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
 .btn{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;border-radius:7px;cursor:pointer}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.pri:disabled{opacity:.6;cursor:progress}
+.btn:disabled{cursor:not-allowed}
+.exmsg{margin:10px 0 0;font-size:.9rem;color:var(--muted);min-height:1.7em}
+.exmsg.bad{color:var(--bad)}
+/* Export sheet: always light and fixed at 794px (A4 width at 96dpi), drawn off-screen and captured as one image for both PDF and JPG. */
+#rpt-host{position:fixed;left:-10000px;top:0;width:794px;pointer-events:none}
+.rpt{--r-ink:#18221b;--r-muted:#5b685f;--r-line:#d9e0da;--r-acc:#4f8f0f;--r-soft:#e6f1d8;
+  width:794px;background:#fff;color:var(--r-ink);padding:44px 48px 32px;font:400 16px/1.6 var(--f-body)}
+.rpt h1{font:800 30px/1.3 var(--f-display);margin:0}
+.rpt .rsub{margin:2px 0 0;color:var(--r-muted);font-size:15px}
+.rpt .rinfo{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--r-line);border-radius:8px;margin-top:22px}
+.rpt .rinfo div{padding:10px 14px;border-bottom:1px solid var(--r-line);min-width:0;overflow-wrap:anywhere}
+.rpt .rinfo div:nth-child(odd){border-right:1px solid var(--r-line)}
+.rpt .rinfo .rw{grid-column:1/-1;border-right:0}
+.rpt .rinfo div:nth-last-child(-n+2){border-bottom:0}
+.rpt .rinfo small{display:block;color:var(--r-muted);font-size:12px;line-height:1.4}
+.rpt .rinfo b{font-weight:500;font-size:16px}
+.rpt .rtop{margin:24px 0 18px;padding:12px 16px;background:var(--r-soft);border-radius:8px;font-weight:500}
+.rpt .rch{display:grid;grid-template-columns:28px 1fr;gap:8px}
+.rpt .ryax{position:relative;height:260px;font-size:12px;color:var(--r-muted);font-variant-numeric:tabular-nums}
+.rpt .ryax span{position:absolute;right:0;transform:translateY(50%);line-height:1}
+.rpt .rcols{position:relative;height:260px;border-bottom:1.5px solid var(--r-muted);display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+.rpt .rg{position:absolute;left:0;right:0;height:1px;background:var(--r-line)}
+.rpt .rc{position:relative;display:flex;align-items:flex-end;justify-content:center}
+.rpt .rb{position:relative;width:56%;max-width:52px;background:var(--r-acc);opacity:.55;border-radius:4px 4px 0 0}
+.rpt .rb.top{opacity:1}
+.rpt .rb b{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);padding-bottom:3px;font-size:16px;font-variant-numeric:tabular-nums}
+.rpt .rxl{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin:8px 0 0 36px;text-align:center;font-size:13px;line-height:1.4}
+.rpt .rft{margin-top:28px;padding-top:12px;border-top:1px solid var(--r-line);color:var(--r-muted);font-size:12px}
 footer{margin-top:36px;color:var(--muted);font-size:.85rem}
 @media (max-width:480px){.row,.scale{grid-template-columns:6.4rem 1fr 1.8rem}.row .nm{font-size:.85rem}}
 </style>
@@ -100,12 +129,17 @@ footer{margin-top:36px;color:var(--muted);font-size:.85rem}
   <div class="vc"><div class="yax"><span style="bottom:100%">18</span><span style="bottom:66.67%">12</span><span style="bottom:33.33%">6</span><span style="bottom:0">0</span></div><div class="cols" id="chart" role="img" aria-label="ලැදියා දර්ශකය"></div></div>
   <div class="xl" id="xl"></div>
   <div class="actions">
+    <button class="btn pri" id="export" type="button">PDF සහ JPG එකවර බාගන්න</button>
     <button class="btn" id="jump" type="button">පිළිතුරු නැති ප්‍රශ්නයට යන්න</button>
     <button class="btn" id="demo" type="button">නිදර්ශන පිළිතුරු පුරවන්න</button>
     <button class="btn" id="clear" type="button">සියල්ල මකන්න</button>
   </div>
+  <p class="exmsg" id="exmsg" role="status" aria-live="polite">නම සහිත ප්‍රතිඵල පත්‍රය (ප්‍රස්ථාරය ඇතුළුව) PDF සහ JPG ලෙස බාගත හැක.</p>
 </div>
-<footer>උපරිම ලකුණු එක් ක්ෂේත්‍රයකට 18කි. සියලු ක්ෂේත්‍රවල එකතුව 63 වේ. Digital සැකසුම - අමිල උඩවත්ත, eduhelp.lk</footer>
+<div id="rpt-host" aria-hidden="true"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<footer>උපරිම ලකුණු එක් ක්ෂේත්‍රයකට 18කි. සියලු ක්ෂේත්‍රවල එකතුව 63 වේ. Excel සැකසුම - අමිල උඩවත්ත, eduhelp.lk</footer>
 </div>
 <script>
 const ITEMS=[["කෘෂිකර්මය", "යන්ත්‍ර අලුත්වැඩියාව"], ["රෝග හඳුනාගැනීම", "අහස්යානයක් පැදවීම"], ["ගොඩනැගිලි සැලසුම් කිරීම", "විද්‍යාගාරයක වැඩ කිරීම"], ["ප්‍රශ්න විසඳීමට පවුල්වලට උදව් කිරීම", "චිත්‍ර ඇඳීම"], ["බදු වාර්තා සැකසීම", "සේවකයින් අධීක්ෂණය"], ["ගනුදෙනුකරුවන් හමුවීම", "ළමයින් බලාගැනීම"], ["ඉඩම් මැනීම", "බෙහෙත් විකිණීම"], ["දියමන්ති මුදු සෑදීම", "විදුලි ලාම්පු සැකසීම"], ["රෝහලේ ගිලනුන්ට උදව් කිරීම", "ආබාධිත මස්පිඬු සම්බාහනය"], ["සංචාර සැලසුම් කිරීම", "සංගීත කණ්ඩායමක වාදනය කිරීම"], ["පාසලක ඉගැන්වීම", "පාලම් සැලසුම් කිරීම"], ["ක්‍රීඩා සඳහා පුහුණුව", "නාට්‍යක රඟපෑම"], ["සාප්පු හිමියෙකු වීම", "පරිගණක අලුත්වැඩියාව"], ["නීතීඥයෙකු වීම", "පශු වෛද්‍යවරයෙකු වීම"], ["පුස්තකාලයක් පාලනය", "පුවත්පතකට ලිපි ලිවීම"], ["වන සංරක්ෂණය", "ශල්‍ය වෛද්‍යවරයෙකු වීම"], ["නිවාස ණයක් අනුමත කිරීම", "නිවාසයක් ඉදිකිරීම"], ["පරිගණක මෘදුකාංග නිෂ්පාදනය", "දන්ත කාර්මික"], ["උද්‍යාන සැකසුම", "සාප්පු හිමියකු වීම"], ["ගිණුම් විග්‍රහය මූල්‍ය විශ්ලේෂණය කිරීම", "රැකියා උපදේශනය"], ["ලොරි රියදුරු", "කාර්යාලයක වැඩ"], ["භූගෝල විද්‍යාව", "යාන්ත්‍රික ඇඳීම"], ["රසායන විද්‍යාව", "ලෝහ වැඩ"], ["සංගීතය", "ජීවවිද්‍යාව"], ["ගෘහ විද්‍යාව", "කවි ලිවීම"], ["ගණිතය", "වාණිජ්‍ය"], ["ව්‍යාපාර", "සෞඛ්‍ය සේවා"], ["කෘෂිකර්මය", "භෞතික විද්‍යාව"], ["රෙදිපිළි කර්මාන්තය", "වඩුවැඩ"], ["ඉතිහාසය", "භූ විද්‍යාව"], ["ආර්ථික විද්‍යාව", "නාට්‍ය ශිල්පය"], ["ආගම", "ඉංජිනේරු විද්‍යාව"], ["සත්ව විද්‍යාව", "ඡායාරූප ශිල්පය"], ["සිල්ලර වෙළඳාම", "ජලනල කර්මාන්තය"], ["දේශපාලන විද්‍යාව", "උද්භිද විද්‍යාව"], ["ලේකම් කටයුතු හැදෑරීම", "චිත්‍ර ශිල්පය"], ["පරිසර විද්‍යාව", "සමාජ විද්‍යාව"], ["ගණකාධිකරණය", "ඉලෙක්ට්‍රොනික ශිල්පය"], ["පරිගණක විද්‍යාව", "වෛද්‍ය වෘත්තිය"], ["ශාරීරික අධ්‍යාපනය", "ප්‍රචාරණය"], ["පුස්තකාලයාධිපති", "අධ්‍යාපන/ ඉගැන්වීම"], ["ගෘහ නිර්මාණ", "කළමනාකරණය"], ["සතුන් බලාගැනීම", "බල ආවුද ක්‍රියාකිරීම"], ["පර්යේෂණයක් කිරීම", "මෝටර් රථ අලුත්වැඩියාව"], ["මූර්ති ඇඹීම", "සතුන් කපා පර්යේෂණ කිරීම"], ["ප්‍රශ්න විසඳීමට මිනිසුන්ට උදව් කිරීම", "දර්ශනයක් චිත්‍ර ගත කිරීම"], ["කාර්යාලයක අර්ධකාලීනව වැඩකිරීම", "සාප්පුවක ඇඳුම් පැළඳුම් විකිණීම"], ["අන් අය අධීක්ෂණය", "ගිලනුන්ට උදව් කිරීම"], ["බෝට්ටුවක් පැදවීම", "තාරකා ශාස්ත්‍රය ඉගෙනීම"], ["නාට්‍යයක රඟපෑම", "සඟරාවක් මුද්‍රණය කිරීම"], ["මිනිසුන් සමග සම්මුඛ සාකච්ඡා", "විද්‍යාත්මක දර්ශනයක් නැරඹීම"], ["නාට්‍යයක් අධ්‍යක්ෂණය කිරීම", "ගීතයක් ලිවීම"], ["මිනිසුන්ගේ විමසුම්වලට පිළිතුරු දීම", "යමක කොටස් ගලවා වෙන් කිරීම"], ["මාළු ඇල්ලීම", "ඡායාරූප ගැනීම"], ["ප්‍රචාරණ දැන්වීම සැකසීම", "ගෘහභාණ්ඩ අලුත්වැඩියාව"], ["පාරිභෝගිකයන්ට උපදෙස් දීම", "පාෂාණ සාම්පල රැස්කිරීම"], ["පර්යේෂණ වාර්තාවක් සැකසීම", "කථාවක් ලිවීම"], ["විනෝදය පිණිස ඇවිදීම", "ක්‍රීඩාවක යෙදීම"], ["සංගමයක භාණ්ඩාගාරික වීම", "විනෝද ක්‍රීඩා කට්ටල් එකලස් කිරීම"], ["පුස්තකාලයක වැඩකටයුතු උදව් දීම", "කාලගුණ තොරතුරු රැස්කිරීම"], ["ට්‍රැක්ටරයක් පැදවීම", "සාප්පුවක් කළමනාකරණය කිරීම"], ["පරිගණකයක වැඩසටහන් සම්පාදනය", "නව කාර්ය මණ්ඩල පුහුණු කිරීම"], ["වත්තේ වැඩකිරීම", "යතුරුලියනය කිරීම"]];
@@ -166,6 +200,77 @@ try{
 }catch(e){}
 if(!$('f-date').value){const d=new Date();$('f-date').value=d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0')}
 render();
+
+/* ---- Export: one click saves the results sheet as PDF and JPG ---- */
+let DL=null,busy=false;
+const exBtn=$('export'),exMsg=$('exmsg');
+exBtn.disabled=true;
+function say(t,bad){exMsg.textContent=t;exMsg.className='exmsg'+(bad?' bad':'')}
+try{
+  (window.claude&&window.claude.use?window.claude.use('downloads'):Promise.resolve(null))
+    .then(d=>{DL=d;if(d)exBtn.disabled=false;else{exBtn.hidden=true;say('මෙම දර්ශනයේ බාගත කිරීම ලබා ගත නොහැක. Claude යෙදුමේ හෝ claude.ai හි පිටුව විවෘත කරන්න.',true)}})
+    .catch(()=>{exBtn.hidden=true});
+}catch(e){exBtn.hidden=true}
+const pad2=n=>String(n).padStart(2,'0');
+function mk(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
+function buildSheet(st){
+  const n=ans.filter(Boolean).length,t=scores(),max=Math.max(...t);
+  const r=mk('div','rpt');
+  r.appendChild(mk('h1',null,'රැකියා ලැදියා පරීක්ෂණය'));
+  r.appendChild(mk('p','rsub','ප්‍රතිඵල පත්‍රය'));
+  const info=mk('div','rinfo');
+  const dateVal=$('f-date').value.trim()||st.date;
+  [['නම',$('f-name').value.trim()||'—',1],['ශ්‍රේණිය',$('f-grade').value.trim()||'—'],['පාසල',$('f-school').value.trim()||'—'],
+   ['දිනය සහ වේලාව',dateVal+'   '+st.time],['පිළිතුරු දුන් ප්‍රශ්න',n+' / 63'+(n<63?' (අසම්පූර්ණයි)':'')]].forEach(x=>{
+    const d=mk('div',x[2]?'rw':'');d.appendChild(mk('small',null,x[0]));d.appendChild(mk('b',null,x[1]));info.appendChild(d)});
+  r.appendChild(info);
+  r.appendChild(mk('div','rtop',$('top3').textContent));
+  const ch=mk('div','rch'),yax=mk('div','ryax'),cols=mk('div','rcols');
+  [18,12,6,0].forEach(v=>{const s=mk('span',null,String(v));s.style.bottom=(v/18*100)+'%';yax.appendChild(s)});
+  [18,12,6].forEach(v=>{const g=mk('div','rg');g.style.bottom=(v/18*100)+'%';cols.appendChild(g)});
+  t.forEach(v=>{
+    const c=mk('div','rc'),b=mk('div','rb'+(n&&v===max?' top':''));
+    b.style.height=(v/18*260)+'px';b.appendChild(mk('b',null,String(v)));c.appendChild(b);cols.appendChild(c)});
+  ch.appendChild(yax);ch.appendChild(cols);r.appendChild(ch);
+  const xl=mk('div','rxl');CATS.forEach(c=>xl.appendChild(mk('span',null,c)));r.appendChild(xl);
+  r.appendChild(mk('div','rft','උපරිම ලකුණු එක් ක්ෂේත්‍රයකට 18කි. සියලු ක්ෂේත්‍රවල එකතුව 63 වේ. Excel සැකසුම - අමිල උඩවත්ත, eduhelp.lk'));
+  return r;
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function saveOne(name,data){
+  try{await DL.save({filename:name,data});return 'ok'}
+  catch(e){
+    if(e&&e.code==='rate_limited'){await sleep(1500);try{await DL.save({filename:name,data});return 'ok'}catch(e2){return (e2&&e2.code)||'err'}}
+    return (e&&e.code)||'err';
+  }
+}
+async function exportBoth(){
+  if(busy||!DL)return;
+  if(!ans.some(Boolean)){say('පළමුව ප්‍රශ්නවලට පිළිතුරු තෝරන්න.',true);return}
+  busy=true;exBtn.disabled=true;say('ප්‍රතිඵල පත්‍රය සකසමින්…');
+  const host=$('rpt-host');
+  try{
+    const d=new Date(),st={date:d.getFullYear()+'.'+pad2(d.getMonth()+1)+'.'+pad2(d.getDate()),time:pad2(d.getHours())+':'+pad2(d.getMinutes())};
+    const stamp=d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate())+'-'+pad2(d.getHours())+pad2(d.getMinutes());
+    host.replaceChildren(buildSheet(st));
+    try{await Promise.all([document.fonts.load('800 24px "Noto Serif Sinhala"','රැකියා'),document.fonts.load('500 16px "Noto Sans Sinhala"','රැකියා'),document.fonts.ready])}catch(e){}
+    const canvas=await html2canvas(host.firstChild,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false,scrollX:0,scrollY:0});
+    const jpgBlob=await new Promise(res=>canvas.toBlob(res,'image/jpeg',0.92));
+    const pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+    const ratio=canvas.height/canvas.width;let w=210,h=w*ratio;if(h>297){h=297;w=h/ratio}
+    pdf.addImage(canvas.toDataURL('image/jpeg',0.92),'JPEG',(210-w)/2,0,w,h);
+    const nm=($('f-name').value||'').replace(/[\\\/:*?"<>|\u0000-\u001f]+/g,'').trim().slice(0,40);
+    const base='Career-Interest_'+(nm||'student')+'_'+stamp;
+    const r1=await saveOne(base+'.pdf',pdf.output('blob'));
+    const r2=await saveOne(base+'.jpg',jpgBlob);
+    if(r1==='ok'&&r2==='ok')say('PDF සහ JPG දෙකම සුරැකිණි.');
+    else if(r1==='ok')say(r2==='declined'?'PDF සුරැකිණි. JPG සුරැකීම ඔබ ප්‍රතික්ෂේප කළා.':'PDF සුරැකිණි. JPG සුරැකීමට නොහැකි විය.',r2!=='declined');
+    else if(r2==='ok')say(r1==='declined'?'JPG සුරැකිණි. PDF සුරැකීම ඔබ ප්‍රතික්ෂේප කළා.':'JPG සුරැකිණි. PDF සුරැකීමට නොහැකි විය.',r1!=='declined');
+    else say('කිසිවක් සුරැකුණේ නැත. නැවත උත්සාහ කරන්න.',true);
+  }catch(e){say('ප්‍රතිඵල පත්‍රය සෑදීමට නොහැකි විය. නැවත උත්සාහ කරන්න.',true)}
+  host.replaceChildren();busy=false;exBtn.disabled=false;
+}
+exBtn.onclick=exportBoth;
 </script>
 
 </body></html>
