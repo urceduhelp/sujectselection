@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="si"><head><meta charset="utf8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>රැකියා ලැදියා පරීක්ෂණය</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;500;700&family=Noto+Serif+Sinhala:wght@600;800&display=swap">
@@ -206,8 +206,15 @@ let DL=null,busy=false;
 const exBtn=$('export'),exMsg=$('exmsg');
 exBtn.disabled=true;
 function say(t,bad){exMsg.textContent=t;exMsg.className='exmsg'+(bad?' bad':'')}
-try{
-  (window.claude&&window.claude.use?window.claude.use('downloads'):Promise.resolve(null))
+/* Outside Claude (a saved .html opened in Chrome) there is no window.claude, so a normal download link works. Inside Claude the downloads capability is used instead. */
+const STANDALONE=!(window.claude&&window.claude.use);
+if(STANDALONE){
+  DL={save:({filename,data})=>new Promise((res,rej)=>{
+    try{const u=URL.createObjectURL(data),a=document.createElement('a');a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000);res({status:'saved'})}
+    catch(e){rej({code:'err'})}})};
+  exBtn.disabled=false;
+}else try{
+  window.claude.use('downloads')
     .then(d=>{DL=d;if(d)exBtn.disabled=false;else{exBtn.hidden=true;say('මෙම දර්ශනයේ බාගත කිරීම ලබා ගත නොහැක. Claude යෙදුමේ හෝ claude.ai හි පිටුව විවෘත කරන්න.',true)}})
     .catch(()=>{exBtn.hidden=true});
 }catch(e){exBtn.hidden=true}
@@ -262,6 +269,7 @@ async function exportBoth(){
     const nm=($('f-name').value||'').replace(/[\\\/:*?"<>|\u0000-\u001f]+/g,'').trim().slice(0,40);
     const base='Career-Interest_'+(nm||'student')+'_'+stamp;
     const r1=await saveOne(base+'.pdf',pdf.output('blob'));
+    if(STANDALONE)await sleep(700);
     const r2=await saveOne(base+'.jpg',jpgBlob);
     if(r1==='ok'&&r2==='ok')say('PDF සහ JPG දෙකම සුරැකිණි.');
     else if(r1==='ok')say(r2==='declined'?'PDF සුරැකිණි. JPG සුරැකීම ඔබ ප්‍රතික්ෂේප කළා.':'PDF සුරැකිණි. JPG සුරැකීමට නොහැකි විය.',r2!=='declined');
@@ -272,5 +280,4 @@ async function exportBoth(){
 }
 exBtn.onclick=exportBoth;
 </script>
-
 </body></html>
